@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 jobs:
   build:
@@ -28,10 +28,14 @@ jobs:
       run: apt install -y golang-1.16 yasm
     - name: Install Rust and its stdlib for Android ABIs, and add environment variables for it.
       run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
-           echo "source \$HOME/.cargo/env" >> $HOME/.bashrc && source $HOME/.cargo/env
-           rustup install $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
-           rustup default $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
-           rustup target install armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android
+    - name: '1'
+      run: echo "source \$HOME/.cargo/env" >> $HOME/.bashrc && source $HOME/.cargo/env
+    - name: '2'
+      run: rustup install $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
+    - name: '3'
+      run: rustup default $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
+    - name: '4'
+      run: rustup target install armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android
     - name: ./run init libs
       run: ./run init libs
     - name: ./run libs update
