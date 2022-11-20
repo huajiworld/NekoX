@@ -1,0 +1,40 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: init
+      run: git submodule update --init --recursive
+    - name: install golang and yasm
+      run: apt install -y golang-1.16 yasm
+    - name: Install Rust and its stdlib for Android ABIs, and add environment variables for it.
+      run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+           echo "source \$HOME/.cargo/env" >> $HOME/.bashrc && source $HOME/.cargo/env
+           rustup install $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
+           rustup default $(cat ss-rust/src/main/rust/shadowsocks-rust/rust-toolchain)
+           rustup target install armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android
+    - name: ./run init libs
+      run: ./run init libs
+    - name: ./run libs update
+      run: ./run libs update
+    - name: ./gradlew assemble Full
+      run: ./gradlew assembleFull
