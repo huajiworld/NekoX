@@ -17,7 +17,7 @@ import android.os.Build;
 @SuppressWarnings("ConstantConditions")
 public class BuildVars {
 
-    public static final boolean IS_BILLING_UNAVAILABLE = false;
+    public static final boolean IS_BILLING_UNAVAILABLE = true;
     public static boolean DEBUG_VERSION = BuildConfig.BUILD_TYPE.equals("debug");
     public static boolean DEBUG_PRIVATE_VERSION = DEBUG_VERSION;
     public static boolean LOGS_ENABLED = DEBUG_PRIVATE_VERSION;
@@ -37,6 +37,7 @@ public class BuildVars {
     public static boolean isPlay = BuildConfig.FLAVOR.endsWith("Play");
     public static boolean isFdroid = BuildConfig.BUILD_TYPE.toLowerCase().contains("fdroid");
     public static boolean isMini = !BuildConfig.FLAVOR.startsWith("full");
+    public static boolean isGServicesCompiled = BuildConfig.BUILD_TYPE.equals("debug") || BuildConfig.BUILD_TYPE.equals("release");
 
     static {
 

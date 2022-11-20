@@ -57,8 +57,6 @@ import static android.os.Build.VERSION.SDK_INT;
 public class ApplicationLoader extends Application {
     private static PendingIntent pendingIntent;
 
-    private static ApplicationLoader applicationLoaderInstance;
-
     @SuppressLint("StaticFieldLeak")
     public static volatile Context applicationContext;
 
@@ -85,7 +83,6 @@ public class ApplicationLoader extends Application {
     private static IMapsProvider mapsProvider;
     private static ILocationServiceProvider locationServiceProvider;
 
-
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -101,36 +98,24 @@ public class ApplicationLoader extends Application {
 
     public static ILocationServiceProvider getLocationServiceProvider() {
         if (locationServiceProvider == null) {
-            locationServiceProvider = applicationLoaderInstance.onCreateLocationServiceProvider();
+            locationServiceProvider = new GoogleLocationProvider();
             locationServiceProvider.init(applicationContext);
         }
         return locationServiceProvider;
     }
 
-    protected ILocationServiceProvider onCreateLocationServiceProvider() {
-        return new GoogleLocationProvider();
-    }
-
     public static IMapsProvider getMapsProvider() {
         if (mapsProvider == null) {
-            mapsProvider = applicationLoaderInstance.onCreateMapsProvider();
+            mapsProvider = new GoogleMapsProvider();
         }
         return mapsProvider;
     }
 
-    protected IMapsProvider onCreateMapsProvider() {
-        return new GoogleMapsProvider();
-    }
-
     public static PushListenerController.IPushListenerServiceProvider getPushProvider() {
         if (pushProvider == null) {
-            pushProvider = applicationLoaderInstance.onCreatePushProvider();
+            pushProvider = PushListenerController.getProvider();
         }
         return pushProvider;
-    }
-
-    protected PushListenerController.IPushListenerServiceProvider onCreatePushProvider() {
-        return PushListenerController.getProvider();
     }
 
     public static String getApplicationId() {
@@ -277,7 +262,6 @@ public class ApplicationLoader extends Application {
 
     @Override
     public void onCreate() {
-        applicationLoaderInstance = this;
         try {
             applicationContext = getApplicationContext();
         } catch (Throwable ignore) {
@@ -347,7 +331,7 @@ public class ApplicationLoader extends Application {
                     // Telegram-FOSS: unconditionally enable push service
                     AlarmManager am = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
                     Intent i = new Intent(applicationContext, NotificationsService.class);
-                    pendingIntent = PendingIntent.getBroadcast(applicationContext, 0, i, 0);
+                    pendingIntent = PendingIntent.getBroadcast(applicationContext, 0, i, PendingIntent.FLAG_IMMUTABLE);
 
                     am.cancel(pendingIntent);
                     am.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 10 * 60 * 1000, pendingIntent);
@@ -366,7 +350,7 @@ public class ApplicationLoader extends Application {
         } else AndroidUtilities.runOnUIThread(() -> {
             applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
 
-            PendingIntent pintent = PendingIntent.getService(applicationContext, 0, new Intent(applicationContext, NotificationsService.class), 0);
+            PendingIntent pintent = PendingIntent.getService(applicationContext, 0, new Intent(applicationContext, NotificationsService.class), PendingIntent.FLAG_IMMUTABLE);
             AlarmManager alarm = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
             alarm.cancel(pintent);
             if (pendingIntent != null) {
@@ -397,6 +381,7 @@ public class ApplicationLoader extends Application {
             LocaleController.getInstance().onDeviceConfigurationChange(newConfig);
             AndroidUtilities.checkDisplaySize(applicationContext, newConfig);
             VideoCapturerDevice.checkScreenCapturerSize();
+            AndroidUtilities.resetTabletFlag();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -585,4 +570,29 @@ public class ApplicationLoader extends Application {
         }
         return result;
     }
+
+//    public static void startAppCenter(Activity context) {
+//        applicationLoaderInstance.startAppCenterInternal(context);
+//    }
+//
+//    public static void checkForUpdates() {
+//        applicationLoaderInstance.checkForUpdatesInternal();
+//    }
+//
+//    public static void appCenterLog(Throwable e) {
+//        applicationLoaderInstance.appCenterLogInternal(e);
+//    }
+
+    protected void appCenterLogInternal(Throwable e) {
+
+    }
+
+    protected void checkForUpdatesInternal() {
+
+    }
+
+    protected void startAppCenterInternal(Activity context) {
+
+    }
+
 }
