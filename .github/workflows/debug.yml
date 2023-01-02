@@ -379,18 +379,46 @@ jobs:
           git submodule status ss-rust/src/main/rust/shadowsocks-rust > shadowsocks_status
           git submodule status 'ssr-libev/*' > shadowsocksr_status
           git submodule status v2ray > v2ray_status
+      - name: Native Cache (armeabi-v7a)
+        uses: actions/cache@v2
+        with:
+          path: |
+            TMessagesProj/src/main/libs
+          key: ${{ hashFiles('TMessagesProj/jni/**', 'ffmpeg_status', 'boringssl_status') }}-armeabi-v7a
       - name: Native Cache (arm64-v8a)
         uses: actions/cache@v2
         with:
           path: |
             TMessagesProj/src/main/libs
           key: ${{ hashFiles('TMessagesProj/jni/**', 'ffmpeg_status', 'boringssl_status') }}-arm64-v8a
+      - name: Native Cache (x86)
+        uses: actions/cache@v2
+        with:
+          path: |
+            TMessagesProj/src/main/libs
+          key: ${{ hashFiles('TMessagesProj/jni/**', 'ffmpeg_status', 'boringssl_status') }}-x86
+      - name: Native Cache (x86_64)
+        uses: actions/cache@v2
+        with:
+          path: |
+            TMessagesProj/src/main/libs
+          key: ${{ hashFiles('TMessagesProj/jni/**', 'ffmpeg_status', 'boringssl_status') }}-x86_64
       - name: V2ray Cache
         uses: actions/cache@v2
         with:
           path: |
             TMessagesProj/libs/libv2ray.aar
           key: ${{ hashFiles('bin/libs/v2ray/*', 'v2ray_status') }}
+      - name: Build Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            TMessagesProj/build
+            TMessagesProj/.cxx
+            ss-rust/build
+            ssr-rust/build
+            openpgp-api/build
+          key: build-cache
       - name: Configure Gradle
         run: |
           sed -i -e "s/16384/6144/g" gradle.properties
@@ -410,7 +438,6 @@ jobs:
         run: |
           export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
           export DEBUG_BUILD=true
-          export NATIVE_TARGET=arm64-v8a
           ./gradlew TMessagesProj:assembleMiniRelease
       - name: Send Build
         run: |
@@ -422,7 +449,7 @@ jobs:
           curl http://127.0.0.1:8081/ || start
           curl http://127.0.0.1:8081/ || start
           curl http://127.0.0.1:8081/ || start
-          apk=$(find TMessagesProj/build/outputs/apk/mini/release -name '*arm64-v8a*.apk' | head -n 1)
+          apk=$(find TMessagesProj/build/outputs/apk/mini/release -name 'NekoX*.apk' | head -n 1)
           curl http://127.0.0.1:8081/bot${{ secrets.HELPER_BOT_TOKEN }}/sendDocument \
             -X POST \
             -F chat_id="${{ secrets.HELPER_BOT_TARGET }}" \
